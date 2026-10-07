@@ -1,0 +1,19 @@
+{
+    "total_forsaljning": 99586.4,
+    "forsaljning_per_kategori": {
+        "Books": 7343.45,
+        "Electronics": 53538.05,
+        "HOME": 566.2,
+        "Home": 18538.1,
+        "Sports": 18842.5,
+        "electronics ": 758.1
+    },
+    "forsaljning_per_region": {
+        " north ": 1596.8,
+        "East": 33683.95,
+        "North": 21800.15,
+        "SOUTH": 449.1,
+        "South": 16272.55,
+        "West": 25783.85
+    }
+}

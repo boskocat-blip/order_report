@@ -1,0 +1,11 @@
+{
+    "totalt_antal_ordrar": 80,
+    "antal_returer": 15,
+    "returgrad_procent": 18.75,
+    "returer_per_kategori": {
+        "Books": 2,
+        "Electronics": 7,
+        "Home": 4,
+        "Sports": 2
+    }
+}
