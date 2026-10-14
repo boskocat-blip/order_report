@@ -1,2 +1,7 @@
-region,total_orders,total_sales
-South,1,1276.8
+region,total_sales
+ north ,1596.8
+East,33683.95
+North,21800.15
+SOUTH,449.1
+South,16272.55
+West,25783.85

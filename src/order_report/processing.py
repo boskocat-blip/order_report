@@ -1,49 +1,69 @@
 import pandas as pd
+from typing import List, Dict
 from order_report.config import logger
+from order_report.models import Order
 
-def berakna_ordervarden(df: pd.DataFrame) -> pd.DataFrame:
+def konvertera_till_order_objekt(df: pd.DataFrame) -> List[Order]:
     """
-    Beräknar brutto- och nettototalsumma (rabatterat värde) för varje order.
+    Konverterar en rensad DataFrame till en lista av Order-objekt (Dataclass).
     """
-    df_resultat = df.copy()
-    df_resultat["brutto_total"] = df_resultat["quantity"] * df_resultat["unit_price"]
-    df_resultat["rabatterat_varde"] = df_resultat["brutto_total"] * (1 - df_resultat["discount"])
-    return df_resultat
+    order_lista = []
+    for _, row in df.iterrows():
+        order = Order(
+            order_id=str(row["order_id"]),
+            order_date=str(row["order_date"]),
+            customer_id=str(row["customer_id"]),
+            region=str(row["region"]),
+            product_category=str(row["product_category"]),
+            quantity=int(row["quantity"]),
+            unit_price=float(row["unit_price"]),
+            discount=float(row["discount"]),
+            returned=bool(row["returned"])
+        )
+        order_lista.append(order)
+    return order_lista
 
-def sammanstall_forsaljning(df: pd.DataFrame) -> dict:
+def generera_fyra_rapporter(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
     """
-    Sammanställer försäljningsstatistik per produktkategori och region.
-    Exkluderar returnerade ordrar från total försäljning.
+    Genererar de fyra ursprungliga rapport-DataFrames med exakt samma beräkningar.
     """
-    df_bereknad = berakna_ordervarden(df)
-    godkanda_ordrar = df_bereknad[~df_bereknad["returned"]]
-    
-    total_forsaljning = float(godkanda_ordrar["rabatterat_varde"].sum())
-    per_kategori = godkanda_ordrar.groupby("product_category")["rabatterat_varde"].sum().to_dict()
-    per_region = godkanda_ordrar.groupby("region")["rabatterat_varde"].sum().to_dict()
-    
-    logger.info("Försäljningsdata sammanställd.")
+    df_calc = df.copy()
+    df_calc["brutto_total"] = df_calc["quantity"] * df_calc["unit_price"]
+    df_calc["net_total"] = df_calc["brutto_total"] * (1.0 - df_calc["discount"])
+
+    # 1. Summary report
+    godkanda = df_calc[~df_calc["returned"]]
+    totalt_forsaljning = godkanda["net_total"].sum()
+    totalt_antal_ordrar = len(df_calc)
+    antal_returer = df_calc["returned"].sum()
+    returgrad = (antal_returer / totalt_antal_ordrar * 100) if totalt_antal_ordrar > 0 else 0.0
+
+    summary_df = pd.DataFrame({
+        "metric": ["Total Sales (Net)", "Total Orders", "Total Returns", "Return Rate (%)"],
+        "value": [round(totalt_forsaljning, 2), totalt_antal_ordrar, antal_returer, round(returgrad, 2)]
+    })
+
+    # 2. Category report
+    category_df = godkanda.groupby("product_category")["net_total"].sum().reset_index()
+    category_df.columns = ["product_category", "total_sales"]
+    category_df["total_sales"] = category_df["total_sales"].round(2)
+
+    # 3. Region report
+    region_df = godkanda.groupby("region")["net_total"].sum().reset_index()
+    region_df.columns = ["region", "total_sales"]
+    region_df["total_sales"] = region_df["total_sales"].round(2)
+
+    # 4. Returns report
+    returns_df = df_calc.groupby("product_category")["returned"].agg(
+        total_orders="count",
+        returned_orders="sum"
+    ).reset_index()
+    returns_df["return_rate_percent"] = (returns_df["returned_orders"] / returns_df["total_orders"] * 100).round(2)
+
+    logger.info("Alla 4 rapporter har beräknats framgångsrikt.")
     return {
-        "total_forsaljning": round(total_forsaljning, 2),
-        "forsaljning_per_kategori": {k: round(v, 2) for k, v in per_kategori.items()},
-        "forsaljning_per_region": {k: round(v, 2) for k, v in per_region.items()}
-    }
-
-def sammanstall_returer(df: pd.DataFrame) -> dict:
-    """
-    Sammanställer returstatistik och returgrad.
-    """
-    total_ordrar = len(df)
-    returer = df[df["returned"]]
-    antal_returer = len(returer)
-    returgrad = (antal_returer / total_ordrar) * 100 if total_ordrar > 0 else 0.0
-    
-    returer_per_kategori = returer.groupby("product_category")["order_id"].count().to_dict()
-    
-    logger.info("Returdata sammanställd.")
-    return {
-        "totalt_antal_ordrar": total_ordrar,
-        "antal_returer": antal_returer,
-        "returgrad_procent": round(returgrad, 2),
-        "returer_per_kategori": returer_per_kategori
+        "summary": summary_df,
+        "category": category_df,
+        "region": region_df,
+        "returns": returns_df
     }
