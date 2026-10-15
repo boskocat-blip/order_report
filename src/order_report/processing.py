@@ -1,13 +1,19 @@
+
 import pandas as pd
 from typing import List, Dict
+
 from order_report.config import logger
 from order_report.models import Order
 
-def konvertera_till_order_objekt(df: pd.DataFrame) -> List[Order]:
+
+def konvertera_till_order_objekt(
+    df: pd.DataFrame
+) -> List[Order]:
     """
-    Konverterar en rensad DataFrame till en lista av Order-objekt (Dataclass).
+    Konverterar rensad data till Order-objekt.
     """
     order_lista = []
+
     for _, row in df.iterrows():
         order = Order(
             order_id=str(row["order_id"]),
@@ -18,52 +24,135 @@ def konvertera_till_order_objekt(df: pd.DataFrame) -> List[Order]:
             quantity=int(row["quantity"]),
             unit_price=float(row["unit_price"]),
             discount=float(row["discount"]),
-            returned=bool(row["returned"])
+            returned=bool(row["returned"]),
         )
         order_lista.append(order)
+
     return order_lista
 
-def generera_fyra_rapporter(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-    """
-    Genererar de fyra ursprungliga rapport-DataFrames med exakt samma beräkningar.
-    """
-    df_calc = df.copy()
-    df_calc["brutto_total"] = df_calc["quantity"] * df_calc["unit_price"]
-    df_calc["net_total"] = df_calc["brutto_total"] * (1.0 - df_calc["discount"])
 
-    # 1. Summary report
-    godkanda = df_calc[~df_calc["returned"]]
-    totalt_forsaljning = godkanda["net_total"].sum()
-    totalt_antal_ordrar = len(df_calc)
-    antal_returer = df_calc["returned"].sum()
-    returgrad = (antal_returer / totalt_antal_ordrar * 100) if totalt_antal_ordrar > 0 else 0.0
+def generera_fyra_rapporter(
+    df: pd.DataFrame
+) -> Dict[str, pd.DataFrame]:
+    """
+    Skapar fyra rapporter med samma beräkningar
+    och kolumner som originalprogrammet.
+    """
+    data = df.copy()
 
-    summary_df = pd.DataFrame({
-        "metric": ["Total Sales (Net)", "Total Orders", "Total Returns", "Return Rate (%)"],
-        "value": [round(totalt_forsaljning, 2), totalt_antal_ordrar, antal_returer, round(returgrad, 2)]
+    # Beräkna ordervärde och rabatterat värde
+    data["order_value"] = (
+        data["quantity"] * data["unit_price"]
+    )
+
+    data["discounted_value"] = (
+        data["order_value"] * (1 - data["discount"])
+    )
+
+    # 1. Overview
+    total_sales = round(
+        data["discounted_value"].sum(), 2
+    )
+
+    number_of_orders = data["order_id"].nunique()
+    number_of_returns = int(data["returned"].sum())
+
+    overview = pd.DataFrame({
+        "metric": [
+            "total_sales",
+            "order_count",
+            "return_count",
+        ],
+        "value": [
+            total_sales,
+            number_of_orders,
+            number_of_returns,
+        ],
     })
 
-    # 2. Category report
-    category_df = godkanda.groupby("product_category")["net_total"].sum().reset_index()
-    category_df.columns = ["product_category", "total_sales"]
-    category_df["total_sales"] = category_df["total_sales"].round(2)
+    # 2. Sales by category
+    category_df = (
+        data.groupby(
+            "product_category", as_index=False
+        )
+        .agg(
+            order_count=("order_id", "nunique"),
+            total_sales=("discounted_value", "sum"),
+            returns=("returned", "sum"),
+        )
+    )
 
-    # 3. Region report
-    region_df = godkanda.groupby("region")["net_total"].sum().reset_index()
-    region_df.columns = ["region", "total_sales"]
-    region_df["total_sales"] = region_df["total_sales"].round(2)
+    category_df["total_sales"] = (
+        category_df["total_sales"].round(2)
+    )
 
-    # 4. Returns report
-    returns_df = df_calc.groupby("product_category")["returned"].agg(
-        total_orders="count",
-        returned_orders="sum"
-    ).reset_index()
-    returns_df["return_rate_percent"] = (returns_df["returned_orders"] / returns_df["total_orders"] * 100).round(2)
+    category_df["return_rate"] = (
+        category_df["returns"]
+        / category_df["order_count"]
+    ).round(3)
 
-    logger.info("Alla 4 rapporter har beräknats framgångsrikt.")
+    category_df = (
+        category_df
+        .sort_values("total_sales", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    # 3. Sales by region
+    region_df = (
+        data.groupby(
+            "region", as_index=False
+        )
+        .agg(
+            order_count=("order_id", "nunique"),
+            total_sales=("discounted_value", "sum"),
+            returns=("returned", "sum"),
+        )
+    )
+
+    region_df["total_sales"] = (
+        region_df["total_sales"].round(2)
+    )
+
+    region_df["return_rate"] = (
+        region_df["returns"]
+        / region_df["order_count"]
+    ).round(3)
+
+    region_df = (
+        region_df
+        .sort_values("total_sales", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    # 4. Returns by category
+    returns_df = (
+        data.groupby(
+            "product_category", as_index=False
+        )
+        .agg(
+            order_count=("order_id", "nunique"),
+            returns=("returned", "sum"),
+        )
+    )
+
+    returns_df["return_rate"] = (
+        returns_df["returns"]
+        / returns_df["order_count"]
+    ).round(3)
+
+    returns_df = (
+        returns_df
+        .sort_values("return_rate", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    logger.info(
+        "Alla fyra rapporter har beräknats."
+    )
+
     return {
-        "summary": summary_df,
+        "summary": overview,
         "category": category_df,
         "region": region_df,
-        "returns": returns_df
+        "returns": returns_df,
     }

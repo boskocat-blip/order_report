@@ -1,8 +1,4 @@
-import sys
-from pathlib import Path
 
-# Lägg till 'src' i sys.path för korrekt modulimport
-sys.path.append(str(Path(__file__).resolve().parent / "src"))
 
 from order_report.config import (
     INPUT_CSV,

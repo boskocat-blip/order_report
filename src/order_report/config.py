@@ -7,11 +7,13 @@ OUTPUT_DIR = BASE_DIR / "output"
 
 INPUT_CSV = DATA_DIR / "orders.csv"
 
+
 # Fyra ursprungliga CSV-rapporter
-SUMMARY_REPORT_PATH = OUTPUT_DIR / "summary_report.csv"
-CATEGORY_REPORT_PATH = OUTPUT_DIR / "category_report.csv"
-REGION_REPORT_PATH = OUTPUT_DIR / "region_report.csv"
-RETURNS_REPORT_PATH = OUTPUT_DIR / "returns_report.csv"
+SUMMARY_REPORT_PATH = OUTPUT_DIR / "overview.csv"
+CATEGORY_REPORT_PATH = OUTPUT_DIR / "sales_by_category.csv"
+REGION_REPORT_PATH = OUTPUT_DIR / "sales_by_region.csv"
+RETURNS_REPORT_PATH = OUTPUT_DIR / "returns_by_category.csv"
+
 
 logging.basicConfig(
     level=logging.INFO,

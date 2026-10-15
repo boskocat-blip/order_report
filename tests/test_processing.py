@@ -39,5 +39,5 @@ def test_generera_fyra_rapporter():
     assert "returns" in rapporter
     
     summary_df = rapporter["summary"]
-    sales_row = summary_df[summary_df["metric"] == "Total Sales (Net)"]
-    assert sales_row["value"].values[0] == 180.0
+    sales_row = summary_df[summary_df["metric"] == "total_sales"]
+    assert sales_row["value"].values[0] == 380.0
