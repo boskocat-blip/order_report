@@ -105,11 +105,8 @@ Koden är uppdelad i moduler för konfiguration, datainläsning, validering, bea
 En dataclass används för att representera en order. Logging används för att dokumentera programmets körning och fel.
 
 ## Dokumentation
-code_review.md – kodgranskning med identifierade förbättringsområden, konsekvenser och förslag.
 
-reflection.md – reflektion kring refaktoreringen, genomförandet och lärdomarna.
+- code_review.md – kodgranskning med identifierade förbättringsområden, konsekvenser och förslag.
+- reflection.md – reflektion kring refaktoreringen, genomförandet och lärdomarna.
+- requirements.txt och pyproject.toml – beroenden och projektkonfiguration.
 
-requirements.txt och pyproject.toml – beroenden och projektkonfiguration.
-- `code_review.md` – kodgranskning med identifierade förbättringsområden, konsekvenser och förslag.
-- `reflection.md` – reflektion kring refaktoreringen, genomförandet och lärdomarna.
-- `requirements.txt` och `pyproject.toml` – beroenden och projektkonfiguration.
