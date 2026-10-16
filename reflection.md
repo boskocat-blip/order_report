@@ -45,7 +45,9 @@ Jag skulle också vilja förbättra felmeddelandena och göra dokumentationen ä
 
 ## Sammanfattning
 
-Den här uppgiften har varit lärorik eftersom jag har fått arbeta med ett befintligt program och förbättra det steg för steg.
+Den här uppgiften har varit lärorik eftersom jag har fått arbeta med ett befintligt program och förbättra det steg för steg.Jag har lärt mig att modularisering, datavalidering, logging och tester gör ett Pythonprogram mer strukturerat och lättare att underhålla.
+
+Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
 
 ## Efter återkopplingen insåg jag att det inte räckte att programmet fungerade och skapade fyra rapporter. Jag behövde också säkerställa att rapporterna hade samma filnamn, kolumner, beräkningar och resultat som originalprogrammet. Därför lade jag till fyra regressionstester som jämför de genererade CSV-filerna med referensfiler från originalet. Tillsammans med de fyra tidigare testerna har projektet nu åtta automatiserade tester, som alla har godkänts vid lokal körning.
 
