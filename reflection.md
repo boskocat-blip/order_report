@@ -47,7 +47,8 @@ Jag skulle också vilja förbättra felmeddelandena och göra dokumentationen ä
 
 ## Sammanfattning
 
-Den här uppgiften har varit lärorik eftersom jag har fått arbeta med ett befintligt program och förbättra det steg för steg.Jag har lärt mig att modularisering, datavalidering, logging och tester gör ett Pythonprogram mer strukturerat och lättare att underhålla.
+## Sammanfattning
 
-## Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
+Den här uppgiften har varit lärorik eftersom jag har fått arbeta med ett befintligt program och förbättra det steg för steg. Jag har lärt mig att modularisering, datavalidering, logging och tester gör ett Pythonprogram mer strukturerat och lättare att underhålla.
 
+Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
