@@ -1,112 +1,111 @@
-# Orderrapportering – Refaktorerat Pythonprogram
+# Orderrapportering - refaktorerat Pythonprogram
 
-Detta projekt är en refaktorerad och modulär Python-applikation som läser orderdata från en CSV-fil, validerar och bearbetar informationen samt genererar fyra CSV-rapporter.
+Det här är min lösning på den individuella uppgiften i Python-fördjupningen. Jag har tagit över ett litet skript som läser orderdata från en CSV-fil och skapar rapporter, och byggt om det så att det är lättare att läsa, testa och bygga vidare på. Rapporternas siffror ska vara exakt desamma som i originalet. Det är bara själva uppbyggnaden som har ändrats.
 
-Syftet med refaktoreringen är att förbättra kodens struktur, läsbarhet, underhållbarhet och testbarhet, samtidigt som originalprogrammets rapporter och beräkningar bevaras.
+## Vad programmet gör
 
-## Projektstruktur
+1. Läser `data/orders.csv` (80 rader, 9 kolumner).
+2. Kontrollerar att alla nödvändiga kolumner finns.
+3. Rensar datan: trimmar och normaliserar `region` och `product_category`, fyller i saknade värden och gör om `returned` till True/False.
+4. Räknar ut ordervärde (`quantity * unit_price`) och rabatterat värde (`order_value * (1 - discount)`).
+5. Skapar fyra rapporter och sparar dem som CSV i `output/`.
 
-```text
-order_report_project/
-├── main.py
-├── pyproject.toml
-├── requirements.txt
-├── README.md
-├── code_review.md
-├── reflection.md
-├── data/
-│   └── orders.csv
-├── output/
-│   ├── overview.csv
-│   ├── sales_by_category.csv
-│   ├── sales_by_region.csv
-│   └── returns_by_category.csv
-├── src/
-│   └── order_report/
-│       ├── __init__.py
-│       ├── config.py
-│       ├── models.py
-│       ├── loading.py
-│       ├── validation.py
-│       ├── processing.py
-│       └── reporting.py
-└── tests/
-    ├── test_processing.py
-    ├── test_validation.py
-    ├── test_original_reports.py
-    └── expected/
-        ├── overview.csv
-        ├── sales_by_category.csv
-        ├── sales_by_region.csv
-        └── returns_by_category.csv
-```
+### Hur saknade värden hanteras
 
-## Installation
+Det här är samma regler som originalskriptet använde, och jag har medvetet inte ändrat dem:
 
-Python 3.10 eller senare krävs.
+| Kolumn | Om värdet saknas eller är fel |
+|---|---|
+| `region`, `product_category` | blir `Unknown` |
+| `quantity` | blir `1` |
+| `unit_price` | blir medianen av alla priser |
+| `discount` | blir `0` |
+| `returned` | `true`, `yes`, `1`, `ja` räknas som retur, allt annat som ingen retur |
 
-Öppna terminalen i projektets huvudmapp och installera projektet med:
+### Rapporterna
+
+| Fil | Innehåll |
+|---|---|
+| `overview.csv` | total försäljning, antal order och antal returer |
+| `sales_by_category.csv` | order, försäljning, returer och returandel per produktkategori |
+| `sales_by_region.csv` | samma sak per region |
+| `returns_by_category.csv` | returer och returandel per kategori, sorterat på returandel |
+
+## Kom igång
+
+Projektet är gjort för Python 3.13. Beroenden är `pandas` (för programmet) och `pytest` (för testerna).
 
 ```bash
+# 1. (valfritt men rekommenderat) skapa en virtuell miljö
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# 2. installera projektet och beroenden
 python -m pip install -e .
-```
-
-Installera även testberoenden vid behov:
-
-```bash
 python -m pip install -r requirements.txt
 ```
 
-## Kör programmet
+Steg 2 är viktigt. `pip install -e .` gör att `order_report` går att importera överallt, både från `main.py` och från testerna, utan att jag behöver pilla med `sys.path`.
 
-Kör följande kommando:
+## Köra programmet
 
 ```bash
 python main.py
 ```
 
-Programmet läser `data/orders.csv` och sparar fyra rapporter i mappen `output/`.
+Programmet loggar vad som händer i terminalen (inläsning, validering, antal order, var rapporterna sparas) och skriver de fyra CSV-filerna till `output/`.
 
-## Rapporter
-
-- `overview.csv` – sammanfattning av försäljning, antal order och returer.
-- `sales_by_category.csv` – försäljning per produktkategori.
-- `sales_by_region.csv` – försäljning per region.
-- `returns_by_category.csv` – returer per produktkategori.
-
-Rapporterna ska behålla originalprogrammets filnamn, kolumner, beräkningar och resultat.
-
-## Datavalidering och bearbetning
-
-Programmet kontrollerar att nödvändiga kolumner finns, hanterar saknade numeriska värden och normaliserar regioner och produktkategorier. Returvärden omvandlas till booleska värden.
-
-Försäljningen beräknas med hänsyn till rabatter, och returer hanteras i rapporternas sammanställningar enligt originalprogrammets logik.
-
-## Testning
-
-Projektet innehåller åtta automatiserade tester som körs med pytest.
-
-Kör testerna med:
+## Köra testerna
 
 ```bash
 python -m pytest -v
 ```
 
-Fyra tester kontrollerar programmets bearbetning och validering. Ytterligare fyra tester i `test_original_reports.py` kontrollerar att de genererade CSV-rapporterna överensstämmer med referensfilerna från originalprogrammet.
+Det finns åtta tester:
 
-Referensfilerna finns i `tests/expected/` och används för att verifiera att rapporternas innehåll, kolumner och resultat bevaras efter refaktoreringen.
+- **`test_processing.py`** (2 st): kollar att `Order`-dataklassens `brutto_total` och `net_total` räknar rätt (2 × 100 med 10 % rabatt blir 180), och att rapporterna får rätt struktur och rätt `total_sales` på en liten testdata.
+- **`test_validation.py`** (2 st): kollar att en saknad kolumn ger `ValueError` (felscenariot), och att rensningen gör om textvärden till rätt typer.
+- **`test_original_reports.py`** (4 st): regressionstester. De kör hela flödet på `orders.csv` och jämför varje rapport med originalprogrammets utdata i `tests/expected/`. Det är de här som visar att refaktoreringen inte har ändrat några resultat.
 
-Samtliga åtta tester har körts lokalt med godkänt resultat.
+## Projektstruktur
 
-## Kodstruktur
+```text
+order_report/
+├── main.py                  # startpunkten, kör hela flödet
+├── pyproject.toml           # paketinställningar och beroenden
+├── requirements.txt         # pandas + pytest
+├── README.md
+├── code_review.md           # granskning av originalkoden
+├── reflection.md            # min reflektion
+├── data/
+│   └── orders.csv           # indata
+├── original/
+│   └── order_report.py      # det ursprungliga skriptet, sparat som referens
+├── output/                  # här hamnar rapporterna när programmet körs
+├── src/order_report/
+│   ├── config.py            # sökvägar och logging-inställningar
+│   ├── models.py            # Order-dataklassen
+│   ├── loading.py           # läser CSV-filen
+│   ├── validation.py        # kolumnkontroll och datarensning
+│   ├── processing.py        # beräkningar och de fyra rapporterna
+│   └── reporting.py         # sparar rapporterna till CSV
+└── tests/
+    ├── test_processing.py
+    ├── test_validation.py
+    ├── test_original_reports.py
+    └── expected/            # referensrapporter från originalprogrammet
+```
 
-Koden är uppdelad i moduler för konfiguration, datainläsning, validering, bearbetning och rapportgenerering.
+Flödet i `main.py` följer samma ordning som mapparna: **läsa in → validera och rensa → bearbeta → spara**. Den som vill hitta var något händer kan alltså gå direkt till rätt modul.
 
-En dataclass används för att representera en order. Logging används för att dokumentera programmets körning och fel.
+## Några tekniska val
 
-## Dokumentation
+- **Modulstruktur med `src/`-layout.** Varje modul har ett tydligt ansvar, och jag har inte delat upp mer än nödvändigt.
+- **Dataclass för `Order`.** Den samlar orderns fält och beräkningarna `brutto_total` och `net_total` på ett ställe.
+- **Logging i stället för `print()`.** Meddelandena har nivåer (INFO, ERROR, CRITICAL) och tidsstämplar.
+- **Fel som syns.** Saknad fil och saknade kolumner ger tydliga felmeddelanden (`FileNotFoundError` respektive `ValueError` som listar vilka kolumner som saknas).
 
-- code_review.md – kodgranskning med identifierade förbättringsområden, konsekvenser och förslag.
-- reflection.md – reflektion kring refaktoreringen, genomförandet och lärdomarna.
-- requirements.txt och pyproject.toml – beroenden och projektkonfiguration.
+## Mer att läsa
 
+- [`code_review.md`](code_review.md) - vad som var problematiskt i originalkoden och hur jag löste det
+- [`reflection.md`](reflection.md) - min reflektion över arbetet
