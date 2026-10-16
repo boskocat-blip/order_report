@@ -29,6 +29,8 @@ Jag behövde också vara noggrann med att behålla de fyra ursprungliga rapporte
 
 ## Vad jag har lärt mig
 
+Efter återkopplingen insåg jag att det inte räckte att programmet fungerade och skapade fyra rapporter. Jag behövde också säkerställa att rapporterna hade samma filnamn, kolumner, beräkningar och resultat som originalprogrammet. Därför lade jag till fyra regressionstester som jämför de genererade CSV-filerna med referensfiler från originalet. Tillsammans med de fyra tidigare testerna har projektet nu åtta automatiserade tester, som alla har godkänts vid lokal körning.
+
 Genom uppgiften har jag lärt mig mer om hur man organiserar ett Pythonprojekt och varför det är bra att dela upp koden i mindre delar.
 
 Jag har fått bättre förståelse för dataclasses, logging, felhantering och automatiska tester. Jag har också lärt mig hur man använder `pytest` för att kontrollera att olika delar av programmet fungerar.
@@ -47,10 +49,5 @@ Jag skulle också vilja förbättra felmeddelandena och göra dokumentationen ä
 
 Den här uppgiften har varit lärorik eftersom jag har fått arbeta med ett befintligt program och förbättra det steg för steg.Jag har lärt mig att modularisering, datavalidering, logging och tester gör ett Pythonprogram mer strukturerat och lättare att underhålla.
 
-Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
+## Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
 
-## Efter återkopplingen insåg jag att det inte räckte att programmet fungerade och skapade fyra rapporter. Jag behövde också säkerställa att rapporterna hade samma filnamn, kolumner, beräkningar och resultat som originalprogrammet. Därför lade jag till fyra regressionstester som jämför de genererade CSV-filerna med referensfiler från originalet. Tillsammans med de fyra tidigare testerna har projektet nu åtta automatiserade tester, som alla har godkänts vid lokal körning.
-
-Jag har lärt mig att modularisering, datavalidering, logging och tester gör ett Pythonprogram mer strukturerat och lättare att underhålla.
-
-Det viktigaste jag tar med mig är att en bra refaktorering inte bara handlar om att skriva om kod, utan också om att bevara programmets ursprungliga beteende och resultat.
